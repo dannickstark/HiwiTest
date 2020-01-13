@@ -17,9 +17,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     m_dialog = new QFileDialog(this);
+    m_dialog->setFileMode(QFileDialog::AnyFile);
+
+    //Set the filter to only show json files
     m_dialog->setNameFilter(tr("File (*.json)"));
 
-
+    //Connect the QPushButton signal to a slot
     QObject::connect(ui->loadButton, SIGNAL(clicked()), this, SLOT(loadData()));
 }
 
@@ -30,6 +33,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadData()
 {
+    //open the DialogBox and wait for selected files
     QStringList fileNames;
       if (m_dialog->exec())
           fileNames = m_dialog->selectedFiles();
@@ -43,6 +47,8 @@ void MainWindow::loadData()
         }
 
         QTextStream out(&file);
+
+        //Read all the content of the current File
         QString content = out.readAll();
         file.close();
 
@@ -52,7 +58,7 @@ void MainWindow::loadData()
             return;
         }
 
-
+        //convert the text to a QJsonDocument
         QJsonDocument doc = QJsonDocument::fromJson(content.toUtf8());
         if (!doc.isObject()) {
             ui->textBrowser->append("------------------------------------------------------");
@@ -67,12 +73,14 @@ void MainWindow::loadData()
         int combinedX = 0;
         int combinedY = 0;
 
+        //Make a loop for all Position in the Json
         for(int i=0; i<numberOfPositions;i++){
             QJsonObject position = jObject.value("Position" + QString::number(i)).toObject();
             combinedX += position.value("x").toInt();
             combinedY += position.value("y").toInt();
         }
 
+        //Render the resukt in the QTextBrowser
         QString result = "------------------------------------------------------";
         result += "\nNumber of Elements: " + QString::number(numberOfPositions);
         result += "\nCombined value of X: " + QString::number(combinedX);
